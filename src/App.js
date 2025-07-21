@@ -1,24 +1,26 @@
-import logo from './logo.svg';
-import './App.css';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import LoginPage from "./pages/LoginPage";
+import AdminApp from "./admin/AdminApp";
+import StaffApp from "./staff/StaffApp";
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<LoginPage />} />
+        <Route path="/admin/*" element={<AdminApp />} />
+        <Route path="/staff/*" element={<StaffApp />} />
+        <Route
+          path="*"
+          element={
+            <div style={{ textAlign: "center", marginTop: 100, fontSize: 24 }}>
+              🚫 الصفحة غير موجودة <br />
+              <a href="/" style={{ color: "#19ad5b" }}>العودة للصفحة الرئيسية</a>
+            </div>
+          }
+        />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
