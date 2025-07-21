@@ -25,7 +25,7 @@ export default function SalaryPage() {
 
   useEffect(() => {
     if (!employeeId) return;
-    setLoading(true);
+    setLoading(true); // هنا تظهر شاشة التحميل
     const { from, to } = getPeriod(year, month);
     fetch(`${BASE_URL}/api/employee-summary/${employeeId}?from=${from}&to=${to}`)
       .then(res => res.json())
@@ -47,6 +47,38 @@ export default function SalaryPage() {
 
   return (
     <div className="salary-app">
+      {/* شاشة تحميل الصفحة */}
+      {loading && (
+        <div style={{
+          position: "fixed",
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: "rgba(255,255,255,0.8)",
+          zIndex: 9999,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "column",
+          fontSize: 27,
+          fontWeight: 900,
+          color: "#2563eb",
+          letterSpacing: 1,
+          fontFamily: "Tajawal, Arial"
+        }}>
+          <div style={{
+            width: 54, height: 54, border: "6px solid #dbeafe",
+            borderTop: "6px solid #2563eb", borderRadius: "50%",
+            marginBottom: 18, animation: "spin 1.2s linear infinite"
+          }} />
+          جاري تحميل الصفحة...
+          <style>{`
+            @keyframes spin {
+              0% { transform: rotate(0deg);}
+              100% { transform: rotate(360deg);}
+            }
+          `}</style>
+        </div>
+      )}
+
       {/* Header */}
       <header className="salary-header">
         <div className="salary-header-bg" />
@@ -223,7 +255,7 @@ export default function SalaryPage() {
         .salary-card {
           background: #fff;
           border-radius: 19px;
-            padding: 22px 13px 14px 13px;
+          padding: 22px 13px 14px 13px;
           min-width: 150px;
           text-align: center;
           box-shadow: 0 4px 18px 0 #d7e3fa36;

@@ -17,6 +17,7 @@ export default function ScanOrderPage() {
   const [executed, setExecuted] = useState(false);
   const [popupMsg, setPopupMsg] = useState("");
   const [steps, setSteps] = useState([]);
+  const [executing, setExecuting] = useState(false); // متغير شاشة التحميل أثناء التنفيذ
 
   useEffect(() => {
     if (!showScanner) return;
@@ -57,11 +58,10 @@ export default function ScanOrderPage() {
     const resSteps = await fetch(`${BASE_URL}/api/orderitemsteps/byOrderItem/${data._id || data.barcode}`);
     const stepsData = await resSteps.json();
     setSteps(Array.isArray(stepsData) ? stepsData : []);
-    // إذا المرحلة الحالية منفذة، أظهر البوب اب وأخفي الزر فورًا
     if (Array.isArray(stepsData)) {
       const stepDone = stepsData.find(s => s.stepName === USER_JOB_TYPE && s.status === "منجز");
       if (stepDone) {
-        let nextStage = ""; // إذا عندك مراحل backend أقدر أجيبها لك تلقائياً
+        let nextStage = "";
         setPopupMsg(
           `ℹ️لقد تم تنفيذ طلب ${USER_JOB_TYPE} لهذا الطلب. تم تنفيذ مرحلة "${USER_JOB_TYPE}" في تاريخ ${stepDone.receivedAt ? new Date(stepDone.receivedAt).toLocaleString('ar-EG') : '-'}.
 ${nextStage ? `المرحلة التالية للطلب هي "${nextStage}".` : ""}`
@@ -85,13 +85,17 @@ ${nextStage ? `المرحلة التالية للطلب هي "${nextStage}".` : 
   async function handleExecute() {
     setError("");
     setPopupMsg("");
+    setExecuting(true); // بداية شاشة التحميل
+
     const orderItemId = item.barcode || "";
     if (!orderItemId) {
       setError("رقم القطعة غير معروف! تحقق من الرد من السيرفر.");
+      setExecuting(false); // إنهاء شاشة التحميل عند الخطأ
       return;
     }
     if (!EMPLOYEE_ID) {
       setError("رقم الموظف غير معروف!");
+      setExecuting(false);
       return;
     }
     const res = await fetch(`${BASE_URL}/api/orderitemsteps`, {
@@ -106,6 +110,8 @@ ${nextStage ? `المرحلة التالية للطلب هي "${nextStage}".` : 
       })
     });
     const data = await res.json();
+    setExecuting(false); // إنهاء شاشة التحميل بعد الاستجابة
+
     if (data.error) {
       if (data.error.startsWith("لقد تم تنفيذ طلب")) {
         setPopupMsg(data.error);
@@ -123,6 +129,38 @@ ${nextStage ? `المرحلة التالية للطلب هي "${nextStage}".` : 
     <div style={{
       padding: 30, textAlign: "center", minHeight: "calc(100vh - 120px)"
     }}>
+      {/* شاشة التحميل عند تنفيذ الأمر */}
+      {executing && (
+        <div style={{
+          position: "fixed",
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: "rgba(255,255,255,0.82)",
+          zIndex: 99999,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "column",
+          fontSize: 27,
+          fontWeight: 900,
+          color: "#2563eb",
+          letterSpacing: 1,
+          fontFamily: "Tajawal, Arial"
+        }}>
+          <div style={{
+            width: 54, height: 54, border: "6px solid #dbeafe",
+            borderTop: "6px solid #2563eb", borderRadius: "50%",
+            marginBottom: 18, animation: "spin 1.2s linear infinite"
+          }} />
+          جاري تنفيذ الأمر...
+          <style>{`
+            @keyframes spin {
+              0% { transform: rotate(0deg);}
+              100% { transform: rotate(360deg);}
+            }
+          `}</style>
+        </div>
+      )}
+
       <h1 style={{marginBottom: 24, fontWeight: 700}}>سكان باركود QR <span style={{fontSize:20, color:"#666"}}>(تنفيذ حسب المرحلة)</span></h1>
       <div style={{marginBottom: 10}}>
         <button

@@ -1,27 +1,64 @@
 import React, { useEffect, useState } from "react";
 import { FaClipboardList, FaClock, FaCheckCircle, FaArrowLeft } from "react-icons/fa";
 const BASE_URL = process.env.REACT_APP_API_URL;
+
 export default function MyOrdersPage() {
   const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true); // متغير التحميل
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const jobType = user.jobType;
 
   useEffect(() => {
     if (!jobType) return;
+    setLoading(true); // إظهار شاشة التحميل أول ما تبدأ
     fetch(`${BASE_URL}/api/stage-orders/for-stage/${encodeURIComponent(jobType)}`)
       .then(res => res.json())
-      .then(setOrders);
+      .then(data => {
+        setOrders(data || []);
+        setLoading(false); // إخفاء شاشة التحميل بعد جلب البيانات
+      }).catch(() => setLoading(false));
   }, [jobType]);
 
-  // نمط خارجي: ترتيب زمني (Timeline)
   return (
     <div className="orders-timeline-bg">
+      {/* شاشة جاري التحميل */}
+      {loading && (
+        <div style={{
+          position: "fixed",
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: "rgba(255,255,255,0.8)",
+          zIndex: 9999,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "column",
+          fontSize: 27,
+          fontWeight: 900,
+          color: "#2563eb",
+          letterSpacing: 1,
+          fontFamily: "Tajawal, Arial"
+        }}>
+          <div style={{
+            width: 54, height: 54, border: "6px solid #dbeafe",
+            borderTop: "6px solid #2563eb", borderRadius: "50%",
+            marginBottom: 18, animation: "spin 1.2s linear infinite"
+          }} />
+          جاري تحميل الصفحة...
+          <style>{`
+            @keyframes spin {
+              0% { transform: rotate(0deg);}
+              100% { transform: rotate(360deg);}
+            }
+          `}</style>
+        </div>
+      )}
+
       <div className="orders-timeline-header">
         <FaClipboardList className="orders-timeline-icon" />
         <span>طلبات جديدة <span className="jobtype">{jobType || "موظف"}</span></span>
       </div>
       <div className="orders-timeline-list">
-        {orders.length === 0 ? (
+        {orders.length === 0 && !loading ? (
           <div className="orders-timeline-empty">لا توجد طلبات حالياً لهذه المرحلة.</div>
         ) : (
           orders.map((order, idx) => (

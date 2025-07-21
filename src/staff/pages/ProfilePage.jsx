@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 const BASE_URL = process.env.REACT_APP_API_URL;
+
 export default function ProfilePage() {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const [profile, setProfile] = useState(null);
@@ -7,21 +8,21 @@ export default function ProfilePage() {
   const [form, setForm] = useState({ name: "", phone: "", password: "" });
   const [msg, setMsg] = useState("");
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
-  // جلب بيانات الموظف
   useEffect(() => {
     if (!user._id) return;
+    setLoading(true);
     fetch(`${BASE_URL}/api/employees/summary/list`)
       .then(res => res.json())
       .then(list => {
         const data = list.find(emp => emp._id === user._id);
-        setProfile(data);
+        setProfile(data || null);
         setLoading(false);
       })
       .catch(() => setLoading(false));
   }, [user._id, edit]);
 
-  // تهيئة الفورم عند بدء التعديل
   useEffect(() => {
     if (profile && edit) {
       setForm({
@@ -32,18 +33,18 @@ export default function ProfilePage() {
     }
   }, [profile, edit]);
 
-  // حفظ التعديلات
   const handleSave = async (e) => {
     e.preventDefault();
     setMsg("");
+    setSaving(true);
     if (!/^9665\d{8}$/.test(form.phone)) {
       setMsg("رقم الجوال يجب أن يبدأ بـ9665 ويحتوي على 12 رقم.");
+      setSaving(false);
       return;
     }
 
     let updateOK = true;
 
-    // حفظ الاسم والجوال أولاً
     const res = await fetch(`${BASE_URL}/api/employees/${user._id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -59,7 +60,6 @@ export default function ProfilePage() {
       localStorage.setItem("user", JSON.stringify({ ...user, name: form.name, phone: form.phone }));
     }
 
-    // إذا الموظف كتب كلمة مرور جديدة — أرسلها لمسار منفصل
     if (form.password && form.password.length >= 4) {
       const passRes = await fetch(`${BASE_URL}/api/employees/${user._id}/password`, {
         method: "PUT",
@@ -73,6 +73,8 @@ export default function ProfilePage() {
       }
     }
 
+    setSaving(false);
+
     if (updateOK) {
       setMsg("تم تحديث البيانات بنجاح!");
       setTimeout(() => {
@@ -82,8 +84,46 @@ export default function ProfilePage() {
     }
   };
 
-  if (loading) return <div style={{ padding: 40, textAlign: "center" }}>جاري التحميل...</div>;
-  if (!profile) return <div style={{ padding: 40, textAlign: "center", color: "#e74c3c" }}>لم يتم العثور على بياناتك</div>;
+  if (loading || saving) {
+    return (
+      <div style={{
+        position: "fixed",
+        top: 0, left: 0, right: 0, bottom: 0,
+        background: "rgba(255,255,255,0.8)",
+        zIndex: 9999,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexDirection: "column",
+        fontSize: 27,
+        fontWeight: 900,
+        color: "#2563eb",
+        letterSpacing: 1,
+        fontFamily: "Tajawal, Arial"
+      }}>
+        <div style={{
+          width: 54, height: 54, border: "6px solid #dbeafe",
+          borderTop: "6px solid #2563eb", borderRadius: "50%",
+          marginBottom: 18, animation: "spin 1.2s linear infinite"
+        }} />
+        {saving ? "جارٍ حفظ البيانات..." : "جاري تحميل الصفحة..."}
+        <style>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg);}
+            100% { transform: rotate(360deg);}
+          }
+        `}</style>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div style={{ padding: 40, textAlign: "center", color: "#e74c3c" }}>
+        لم يتم العثور على بياناتك
+      </div>
+    );
+  }
 
   let createdAtStr = "-";
   try {
@@ -146,7 +186,7 @@ export default function ProfilePage() {
                 flex: 1, padding: "13px", background: "#2453c8", color: "#fff", fontWeight: 900,
                 fontSize: 17, border: "none", borderRadius: 8
               }}
-              disabled={loading}
+              disabled={loading || saving}
             >حفظ</button>
             <button
               type="button"
@@ -155,6 +195,7 @@ export default function ProfilePage() {
                 fontSize: 17, border: "1.5px solid #2453c8", borderRadius: 8
               }}
               onClick={() => { setEdit(false); setMsg(""); }}
+              disabled={loading || saving}
             >إلغاء</button>
           </div>
           {msg && (
@@ -185,6 +226,7 @@ export default function ProfilePage() {
               background: "#2453c8", color: "#fff", border: "none", borderRadius: 8, letterSpacing: 1.1
             }}
             onClick={() => setEdit(true)}
+            disabled={loading || saving}
           >
             تعديل البيانات
           </button>
