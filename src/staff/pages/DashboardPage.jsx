@@ -23,7 +23,7 @@ export default function DashboardPage() {
       .then(res => res.json())
       .then(data => {
         if (!data.hasPhone) {
-          navigate("/add-phone");
+          navigate("add-phone");
         } else {
           fetch(`${BASE_URL}/api/employees/competition/monthly`)
             .then(res => res.json())
