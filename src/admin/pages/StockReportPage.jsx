@@ -15,7 +15,7 @@ export default function StockReportPage() {
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
-
+  
   useEffect(() => {
     fetch(`${BASE_URL}/api/fabrics`)
       .then(res => res.json())
