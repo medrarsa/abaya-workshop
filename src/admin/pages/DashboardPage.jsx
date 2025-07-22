@@ -203,7 +203,7 @@ export default function DashboardPage() {
           </ul>
         </div>
       </div>
-
+ 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32, marginTop: 36 }}>
         <div style={{ background: "#fff", borderRadius: 13, padding: 18, minHeight: 120, border: "1px solid #e0e6f3" }}>
           <h3 style={{ fontWeight: 800, color: "#d7263d", fontSize: 17, marginBottom: 10 }}>الموظفون الموقوفون</h3>
