@@ -21,7 +21,7 @@ export default function StockReportPage() {
       .then(res => res.json())
       .then(setFabrics);
   }, []);
-
+ 
   const fetchReport = async (e) => {
     e.preventDefault();
     setMsg("");
