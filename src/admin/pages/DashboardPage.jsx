@@ -8,7 +8,7 @@ const monthsList = [
   { value: 7, label: "يوليو" }, { value: 8, label: "أغسطس" }, { value: 9, label: "سبتمبر" },
   { value: 10, label: "أكتوبر" }, { value: 11, label: "نوفمبر" }, { value: 12, label: "ديسمبر" },
 ];
-const yearsList = [2025, 2026, 2027, 2028, 2029];
+const yearsList = [2025, 2026, 2027, 2028, 2029, 2030];
 
 function DailyBarChart({ data, month, year }) {
   return (

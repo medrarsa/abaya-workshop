@@ -516,7 +516,7 @@ function ModelsTableWithExcelPopUp() {
                         padding: "4px 12px"
                       }}
                     >
-                      حذف
+                       حذف
                     </button>
                   ) : (
                     <span style={{ color: "#aaa" }}>—</span>
